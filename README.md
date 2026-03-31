@@ -1,1 +1,2 @@
-# disasterwatch
+# DisasterWatch
+A global threat intelligence 
