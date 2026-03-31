@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DisasterWatch — Global Threat Intelligence</title>
+
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Google Fonts: Orbitron (headings) + Barlow Condensed (body) + Fira Code (data) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Barlow+Condensed:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Your styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- =====================================================
+       SCAN-LINE OVERLAY (decorative effect)
+  ====================================================== -->
+  <div class="scanline-overlay"></div>
+
+  <!-- =====================================================
+       NAVBAR
+  ====================================================== -->
+  <nav class="navbar">
+
+    <div class="nav-brand">
+      <div class="nav-logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="#00c8b4" stroke-width="1.5"/>
+          <circle cx="12" cy="12" r="5" stroke="#00c8b4" stroke-width="1.5"/>
+          <line x1="12" y1="2" x2="12" y2="5" stroke="#00c8b4" stroke-width="1.5"/>
+          <line x1="12" y1="19" x2="12" y2="22" stroke="#00c8b4" stroke-width="1.5"/>
+          <line x1="2" y1="12" x2="5" y2="12" stroke="#00c8b4" stroke-width="1.5"/>
+          <line x1="19" y1="12" x2="22" y2="12" stroke="#00c8b4" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div>
+        <div class="nav-title">DISASTERWATCH</div>
+        <div class="nav-subtitle">GLOBAL THREAT INTELLIGENCE</div>
+      </div>
+    </div>
+
+    <div class="nav-center">
+      <div class="live-badge">
+        <span class="pulse-ring"></span>
+        <span class="pulse-core"></span>
+        LIVE FEED
+      </div>
+      <div class="last-updated-wrap">
+        <span class="last-updated-label">LAST SYNC</span>
+        <span class="last-updated fira" id="lastUpdated">--:--:-- UTC</span>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <div class="threat-level-wrap">
+        <span class="threat-label">GLOBAL INDEX</span>
+        <span class="threat-value fira" id="globalThreat">LOADING</span>
+      </div>
+      <button class="refresh-btn" id="refreshBtn" title="Refresh data">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        REFRESH
+      </button>
+    </div>
+
+  </nav>
+
+  <!-- =====================================================
+       STATS BAR
+  ====================================================== -->
+  <div class="stats-bar">
+
+    <div class="stat-card eq-stat">
+      <div class="stat-accent-line"></div>
+      <div class="stat-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-number fira" id="eqCount">—</div>
+        <div class="stat-label">EARTHQUAKES</div>
+        <div class="stat-sub">PAST 7 DAYS · M4.5+</div>
+      </div>
+    </div>
+
+    <div class="stat-card tc-stat">
+      <div class="stat-accent-line"></div>
+      <div class="stat-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10"/>
+          <path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4"/>
+          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83"/>
+        </svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-number fira" id="tcCount">—</div>
+        <div class="stat-label">CYCLONES / STORMS</div>
+        <div class="stat-sub">ACTIVE ALERTS</div>
+      </div>
+    </div>
+
+    <div class="stat-card fl-stat">
+      <div class="stat-accent-line"></div>
+      <div class="stat-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+        </svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-number fira" id="flCount">—</div>
+        <div class="stat-label">FLOOD ALERTS</div>
+        <div class="stat-sub">ACTIVE ALERTS</div>
+      </div>
+    </div>
+
+    <div class="stat-card mag-stat">
+      <div class="stat-accent-line"></div>
+      <div class="stat-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </div>
+      <div class="stat-body">
+        <div class="stat-number fira" id="maxMag">—</div>
+        <div class="stat-label">MAX MAGNITUDE</div>
+        <div class="stat-sub">LARGEST EVENT</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- =====================================================
+       MAIN CONTENT
+  ====================================================== -->
+  <div class="main-content">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+      <div class="sidebar-header">
+        <span class="sidebar-title">EVENT REGISTRY</span>
+        <span class="event-count fira" id="eventCount">0 EVENTS</span>
+      </div>
+
+      <div class="filter-tabs">
+        <button class="tab active" data-filter="all">
+          <span class="tab-dot all-dot"></span>ALL
+        </button>
+        <button class="tab" data-filter="earthquake">
+          <span class="tab-dot eq-dot"></span>QUAKES
+        </button>
+        <button class="tab" data-filter="cyclone">
+          <span class="tab-dot tc-dot"></span>CYCLONES
+        </button>
+        <button class="tab" data-filter="flood">
+          <span class="tab-dot fl-dot"></span>FLOODS
+        </button>
+      </div>
+
+      <div class="disaster-list" id="disasterList">
+        <div class="loading-state">
+          <div class="radar-spinner">
+            <div class="radar-sweep"></div>
+            <div class="radar-ring r1"></div>
+            <div class="radar-ring r2"></div>
+            <div class="radar-ring r3"></div>
+          </div>
+          <div class="loading-text fira">SCANNING GLOBAL FEEDS...</div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- MAP CONTAINER -->
+    <div class="map-container">
+      <div id="map"></div>
+
+      <!-- Map overlay: coordinate display -->
+      <div class="map-coords" id="mapCoords">
+        <span class="fira" id="coordText">LAT — · LON —</span>
+      </div>
+
+      <!-- Map legend -->
+      <div class="map-legend">
+        <div class="legend-header">THREAT LEGEND</div>
+        <div class="legend-item">
+          <span class="legend-blob eq-blob"></span>
+          <span class="legend-label">EARTHQUAKE</span>
+          <span class="legend-note fira">USGS · 4.5+ M</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-blob tc-blob"></span>
+          <span class="legend-label">CYCLONE / STORM</span>
+          <span class="legend-note fira">GDACS</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-blob fl-blob"></span>
+          <span class="legend-label">FLOOD ALERT</span>
+          <span class="legend-note fira">GDACS</span>
+        </div>
+        <div class="legend-divider"></div>
+        <div class="legend-severity">
+          <span class="sev-dot critical-dot"></span><span>CRITICAL</span>
+          <span class="sev-dot high-dot"></span><span>HIGH</span>
+          <span class="sev-dot medium-dot"></span><span>MODERATE</span>
+          <span class="sev-dot low-dot"></span><span>LOW</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- =====================================================
+       SCRIPTS
+  ====================================================== -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
